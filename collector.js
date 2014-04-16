@@ -306,7 +306,12 @@
 
                 for (var name in this.elements) {
                     if (this.elements.hasOwnProperty(name) && 'submit' !== name) {
-                        values[name] = this.elements[name].instance.value;
+                        if ('select' === this.elements[name].type[0]) {
+                            values[name] = this.elements[name].instance.innerText;
+                        }
+                        else {
+                            values[name] = this.elements[name].instance.value;
+                        }
                     }
                 }
 
