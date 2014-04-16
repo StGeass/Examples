@@ -156,7 +156,6 @@
                         url: 'country.json',
                         name: 'setCities',
                         callback: function (data) {
-                            this.data = data;
                             for (var id in data) {
                                 this.instance.innerHTML += '<option value="' + id + '">' + data[id] + '</option>';
                             }
