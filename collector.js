@@ -156,6 +156,7 @@
                         url: 'country.json',
                         name: 'setCities',
                         callback: function (data) {
+                            this.data = data;
                             for (var id in data) {
                                 this.instance.innerHTML += '<option value="' + id + '">' + data[id] + '</option>';
                             }
@@ -170,19 +171,18 @@
 
                         this.instance.innerHTML = '';
 
-                        if (!this.data) {
-                            this.data = {};
+                        if (!this.cache) {
+                            this.cache = {};
                         }
 
-                        if (!this.data[parentId]) {
+                        if (!this.cache[parentId]) {
                             request.sendTo(url, this.jsonp.name, function (data) {
-                                element.data[parentId] = data;
-
+                                element.cache[parentId] = data;
                                 element.jsonp.callback.call(element, data);
                             });
                         }
                         else {
-                            this.jsonp.callback.call(this, this.data[parentId]);
+                            this.jsonp.callback.call(this, this.cache[parentId]);
                         }
                     }
                 },
@@ -306,12 +306,8 @@
 
                 for (var name in this.elements) {
                     if (this.elements.hasOwnProperty(name) && 'submit' !== name) {
-                        if ('select' === this.elements[name].type[0]) {
-                            values[name] = this.elements[name].instance.innerText;
-                        }
-                        else {
-                            values[name] = this.elements[name].instance.value;
-                        }
+                        var value = this.elements[name].instance.value;
+                        values[name] = ('select' === this.elements[name].type[0]) ? this.elements[name].data[value] : value;
                     }
                 }
 
