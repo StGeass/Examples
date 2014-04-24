@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+   <head>
+      <meta charset="utf-8" />
+      <link rel="stylesheet" href="css/start/jquery-ui.css" type="text/css" media="all" />
+
+      <script src="js/libs/atom.js"></script>
+      <script src="js/libs/jquery.js"></script>
+      <script src="js/libs/jquery-ui.js"></script>
+      <script src="js/libs/libcanvas.js"></script>
+
+      <script src="js/init.js"></script>
+      <script src="js/controller.js"></script>
+      <script src="js/lera.js"></script>
+      <script src="js/stuff.js"></script>
+
+      <style type="text/css">
+        #main {position:absolute; left: 200px; margin-top: 100px;  }
+        #sky { max-width: 650px; height: auto; }
+        #bg { 
+          background-image: url(images/bg.png);
+          width: 900px;
+          height: 650px;
+          left: -100px;
+          top: -100px;
+          position: absolute;
+          z-index: 100;
+        }
+        #canvas { display: none; }
+        #score { width: 600px; position: absolute; left: 30px; top: 500px; z-index: 101; }
+        #stat { width: 300px; position: absolute; right: -370px; top: 50px; z-index: 101; }
+        #posts { margin-left: 50px; margin-top: 100px; width: 550px;}
+        .post { border-bottom: #222222 dotted 2px; padding-bottom: 20px;}
+        #shb, #ehb {position: absolute;  top: 100px; left: 100px; z-index: 110; }
+        #pen {position: absolute;  top: 0px; left: -100px;z-index: 105}
+      </style>
+      <script>
+        $(function () {
+          $('#start').click(function() {
+            $('#shb, #canvas, #stat').toggle();
+            World.start('canvas');
+            $( "#score" ).progressbar({value: 0});
+          });
+        });
+      </script>
+   </head>
+   <body>
+     <div id="main">
+       <div id="bg"></div>
+       <div id="sky">
+         <div id="ehb" style="display: none"><img src="images/hb.gif"/></div>
+         <div id="shb">
+           Командуй безумной именницей с помощью ← ↑ → и помоги ей пережить свой День Рожденья!
+           <br>
+           <img src="images/start.gif" id="start" style="cursor: pointer; padding-top: 100px"/>
+         </div>
+        <canvas id="canvas"></canvas>
+       </div>
+       <div id="bar"><div id="score"></div></div>
+       <div id="posts">
+
+         </div>
+       <div id="stat" style="display: none">
+         <img src="images/lera.png"/><br>
+         Выросла до: <span id="age">1</span> лет <br><br>
+         Покормлена: <span id="food">0</span> раз <br>
+         Собрала: <span id="slipper">0</span> туфелек <br>
+         Получила: <span id="gift">0</span> подарков <br>
+         Поздравлена: <span id="post">0</span>/9999 раз <br>
+         Сьела: <span id="cake">0</span> тортиков <br>
+       </div>
+     </div>
+   </body>
+</html>
