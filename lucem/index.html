@@ -1,0 +1,38 @@
+<html>
+<head>
+  <meta charset="utf-8"/>
+
+  <title>Lucemo</title>
+
+  <script type="text/javascript" src="json/coords.js"></script>
+  <script type="text/javascript" src="js/libs/atom.js"></script>
+  <script type="text/javascript" src="js/libs/libcanvas.js"></script>
+  <script type="text/javascript" src="js/light.js"></script>
+  <style type="text/css">
+    body {
+      background-color: #000;
+    }
+    #lightsApp {
+      position: absolute;
+      top: 200px;
+      left: 150px;
+      z-index: 3;
+    }
+    #lightsApp canvas[data-name="omni"] {
+      margin-left: 17px;
+      margin-top: 27px;
+    }
+    .glass {
+      position: absolute;
+      left: 167px;
+      top: 228px;
+    }
+  </style>
+</head>
+<body>
+  <div id="lightsApp"></div>
+
+  <img src="images/glass_1.png" class="glass" style="z-index: 0">
+  <img src="images/glass_2.png" class="glass" style="z-index: 2">
+</body>
+</html>
