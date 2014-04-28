@@ -4,7 +4,7 @@ var application = {};
 
 // Event
 (function () {
-    this.event = {
+    this.eventHelper = {
         /**
          * @param {Object} element the DOM Object
          * @param {Array, String} eventsNames list
@@ -25,46 +25,45 @@ var application = {};
 
             // Вызываем callback для каждого события, передаём ему контекст и event object
             for (var i in eventsNames) {
-                element[eventMethod](eventPrefix + eventsNames[i], function (e) {
-                    console.log(eventPrefix + eventsNames[i]);
-                    callback.call(context, e);
+                element[eventMethod](eventPrefix + eventsNames[i], function (event) {
+                    callback.call(context, event || window.event);
                 });
             }
         },
 
         /**
-         * @param {Object} e the Event Object
+         * @param {Object} event the Event Object
          */
 
-        fix: function (e) {
-            e = e || window.event;
+        fix: function (event) {
+            event = event || window.event;
 
-            if (!e.target) e.target = e.srcElement;
+            if (!event.target) event.target = event.srcElement;
 
-            if (e.pageX == null && e.clientX != null) {
+            if (event.pageX == null && event.clientX != null) {
                 var html = document.documentElement;
                 var body = document.body;
 
-                e.pageX = e.clientX + (html.scrollLeft || body && body.scrollLeft || 0);
-                e.pageX -= html.clientLeft || 0;
+                event.pageX = event.clientX + (html.scrollLeft || body && body.scrollLeft || 0);
+                event.pageX -= html.clientLeft || 0;
 
-                e.pageY = e.clientY + (html.scrollTop || body && body.scrollTop || 0);
-                e.pageY -= html.clientTop || 0;
+                event.pageY = event.clientY + (html.scrollTop || body && body.scrollTop || 0);
+                event.pageY -= html.clientTop || 0;
             }
 
-            if (!e.which && e.button) {
-                e.which = e.button & 1 ? 1 : ( e.button & 2 ? 3 : ( e.button & 4 ? 2 : 0 ) )
+            if (!event.which && event.button) {
+                event.which = event.button & 1 ? 1 : ( event.button & 2 ? 3 : ( event.button & 4 ? 2 : 0 ) )
             }
 
-            return e;
+            return event;
         },
 
         /**
-         * @param {Object} e the Event Object
+         * @param {Object} event the Event Object
          */
 
-        touchHandler: function (e) {
-            var touch = e.changedTouches[0];
+        touchHandler: function (event) {
+            var touch = event.changedTouches[0];
 
             var fakeEvent = document.createEvent("MouseEvent");
 
@@ -72,31 +71,31 @@ var application = {};
                 touchstart: "mousedown",
                 touchmove: "mousemove",
                 touchend: "mouseup"
-            }[e.type], true, true, window, 1,
+            }[event.type], true, true, window, 1,
                 touch.screenX, touch.screenY,
                 touch.clientX, touch.clientY, false,
                 false, false, false, 0, null);
 
             touch.target.dispatchEvent(fakeEvent);
 
-            this.preventDefault(e);
+            this.preventDefault(event);
         },
 
         /**
-         * @param {Object} e the Event Object
+         * @param {Object} event the Event Object
          */
 
-        preventDefault: function (e) {
-            if (e.preventDefault)
-                e.preventDefault();
+        preventDefault: function (event) {
+            if (event.preventDefault)
+                event.preventDefault();
             else // Привет IE
-                e.returnValue = false;
+                event.returnValue = false;
         }
     };
 }).call(application);
 
 // Drag and drop
-(function (event) {
+(function (eventHelper) {
     /**
      * @param {Object} element the DOM Object
      */
@@ -141,36 +140,34 @@ var application = {};
 
         var self = this;
 
-        this.onDown = function (e) {
-            e = event.fix(e);
+        this.onDown = function (event) {
+            event = eventHelper.fix(event);
 
-            if (e.which != 1) return;
+            if (event.which != 1) return;
 
-            var elem = self.getDraggable(e);
+            var elem = self.getDraggable(event);
             if (!elem) return;
 
             dragTarget.elem = elem;
 
-            dragTarget.downX = e.pageX;
-            dragTarget.downY = e.pageY;
-
-            return false;
+            dragTarget.downX = event.pageX;
+            dragTarget.downY = event.pageY;
         }
 
-        this.onMove = function (e) {
+        this.onMove = function (event) {
             if (!dragTarget.elem) return;
 
-            e = event.fix(e);
-            console.log(e);
+            event = eventHelper.fix(event);
+
             if (!dragTarget.copy) {
-                var moveX = e.pageX - dragTarget.downX;
-                var moveY = e.pageY - dragTarget.downY;
+                var moveX = event.pageX - dragTarget.downX;
+                var moveY = event.pageY - dragTarget.downY;
 
                 if (Math.abs(moveX) < 3 && Math.abs(moveY) < 3) {
                     return;
                 }
 
-                dragTarget.copy = self.createCopy(e);
+                dragTarget.copy = self.createCopy(event);
                 if (!dragTarget.copy) {
                     dragTarget = {};
                     return;
@@ -180,26 +177,23 @@ var application = {};
                 dragTarget.shiftX = dragTarget.downX - coords.left;
                 dragTarget.shiftY = dragTarget.downY - coords.top;
 
-                self.startDrag(e);
+                self.startDrag(event);
             }
 
-            dragTarget.copy.style.left = e.pageX - dragTarget.shiftX + 'px';
-            dragTarget.copy.style.top = e.pageY - dragTarget.shiftY + 'px';
-
-            return false;
+            dragTarget.copy.style.left = event.pageX - dragTarget.shiftX + 'px';
+            dragTarget.copy.style.top = event.pageY - dragTarget.shiftY + 'px';
         }
 
-        this.onUp = function (e) {
+        this.onUp = function (event) {
             if (dragTarget.copy) {
-                e = event.fix(e);
-                self.finishDrag(e);
+                self.finishDrag(eventHelper.fix(event));
             }
 
             dragTarget = {};
         }
 
-        this.finishDrag = function (e) {
-            var dropElem = self.getDroppable(e);
+        this.finishDrag = function (event) {
+            var dropElem = self.getDroppable(event);
 
             if (!dropElem) {
                 self.onDragCancel(dragTarget);
@@ -208,7 +202,7 @@ var application = {};
             }
         }
 
-        this.createCopy = function (e) {
+        this.createCopy = function (event) {
             var copy = dragTarget.elem;
             var old = {
                 parent: copy.parentNode,
@@ -233,7 +227,7 @@ var application = {};
             return copy;
         }
 
-        this.startDrag = function (e) {
+        this.startDrag = function (event) {
             var copy = dragTarget.copy;
 
             copy.style.zIndex = 9999;
@@ -242,17 +236,17 @@ var application = {};
             document.body.appendChild(copy);
         }
 
-        this.getDraggable = function (e) {
-            var elem = e.target;
+        this.getDraggable = function (event) {
+            var elem = event.target;
             while (elem != document && elem.getAttribute('draggable') == null) {
                 elem = elem.parentNode;
             }
             return elem == document ? null : elem;
         }
 
-        this.getDroppable = function (e) {
+        this.getDroppable = function (event) {
 
-            var elem = getElementUnderClientXY(dragTarget.copy, e.clientX, e.clientY);
+            var elem = getElementUnderClientXY(dragTarget.copy, event.clientX, event.clientY);
 
             while (elem != document && elem.getAttribute('droppable') == null) {
                 elem = elem.parentNode;
@@ -262,8 +256,6 @@ var application = {};
         }
 
         this.onDragEnd = function (dragTarget, dropElem) {
-            console.log(dragTarget, dropElem);
-
             dragTarget.copy.backStyles();
 
             dropElem.appendChild(dragTarget.elem);
@@ -274,10 +266,10 @@ var application = {};
             dragTarget.copy.backPosition();
         };
     };
-}).call(application, application.event);
+}).call(application, application.eventHelper);
 
 // Test module
-(function (event, dragAndDrop) {
+(function (eventHelper, dragAndDrop) {
 
     /**
      * @param {String} path
@@ -407,8 +399,8 @@ var application = {};
             self.questions.set(question.questions);
         });
 
-        event.subscribe(document.getElementById(button), ['click', 'touchend'], function (e) {
-            event.preventDefault(e);
+        eventHelper.subscribe(document.getElementById(button), ['click', 'touchend'], function (event) {
+            eventHelper.preventDefault(event);
 
             if (self.correct.get()) {
                 self.correct.compare();
@@ -422,28 +414,28 @@ var application = {};
     }
 
     // Subscribe on mouse events
-    event.subscribe(document, 'mousedown', function (e) {
-        event.preventDefault(e);
+    eventHelper.subscribe(document, 'mousedown', function (event) {
+        eventHelper.preventDefault(event);
 
-        dragAndDrop.onDown();
+        dragAndDrop.onDown(event);
     }, window);
 
-    event.subscribe(document, 'mousemove', function (e) {
-        event.preventDefault(e);
+    eventHelper.subscribe(document, 'mousemove', function (event) {
+        eventHelper.preventDefault(event);
 
-        dragAndDrop.onMove();
+        dragAndDrop.onMove(event);
     }, window);
 
-    event.subscribe(document, 'mouseup', function (e) {
-        event.preventDefault(e);
+    eventHelper.subscribe(document, 'mouseup', function (event) {
+        eventHelper.preventDefault(event);
 
-        dragAndDrop.onUp();
+        dragAndDrop.onUp(event);
     }, window);
 
     // Subscribe on touch events
-    event.subscribe(document, 'touchstart', event.touchHandler, event);
-    event.subscribe(document, 'touchmove', event.touchHandler, event);
-    event.subscribe(document, 'touchend', event.touchHandler, event);
-    event.subscribe(document, 'touchcancel', event.touchHandler, event);
+    eventHelper.subscribe(document, 'touchstart', eventHelper.touchHandler, eventHelper);
+    eventHelper.subscribe(document, 'touchmove', eventHelper.touchHandler, eventHelper);
+    eventHelper.subscribe(document, 'touchend', eventHelper.touchHandler, eventHelper);
+    eventHelper.subscribe(document, 'touchcancel', eventHelper.touchHandler, eventHelper);
 
-}).apply(application, [application.event, new application.dragAndDrop]);
+}).apply(application, [application.eventHelper, new application.dragAndDrop]);
