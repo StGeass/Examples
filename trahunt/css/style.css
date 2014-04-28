@@ -1,0 +1,78 @@
+#container {
+    width: 580px;
+    padding: 5px 17px;
+    margin: 0 auto;
+}
+
+#title {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 5px;
+    text-align: center;
+}
+
+#questions {
+    width: 100%;
+    display: inline-block;
+}
+
+#questions .question {
+    width: 250px;
+    float: left;
+}
+#questions .question .title {
+    margin: 5px;
+    padding: 5px 0;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    background-color: rgba(21, 237, 50, 0.37);
+    border: 1px black outset;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+}
+
+#questions .question:nth-child(2n+1) {
+    margin-right: 70px;
+}
+
+#questions .droppable-area {
+    margin: 5px;
+    position: relative;
+    background-color: rgba(21, 237, 50, 0.37);
+    width: 100%;
+    height: 250px;
+    float: left;
+    overflow-y: auto;
+    border: 1px black dashed;
+}
+
+#questions .drag-hint {
+    width: 150px;
+    text-align: center;
+    position: absolute;
+    top: 116px;
+    left: 50%;
+    margin-left: -75px;
+    opacity: 0.3;
+}
+
+#answers {
+    width: 100%;
+    display: inline-block;
+}
+
+#container .draggable-answer {
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+    background-color: rgba(100, 149, 237, 0.38);
+    float: left;
+}
+
+#button {
+    padding: 10px 51px;
+    margin: 0 auto;
+    display: block;
+}
