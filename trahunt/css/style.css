@@ -40,6 +40,7 @@
 }
 
 #questions .droppable-area {
+    z-index: 2;
     margin: 5px;
     width: 250px;
     position: absolute;
@@ -51,6 +52,7 @@
 }
 
 #questions .drag-hint {
+    z-index: 1;
     width: 150px;
     text-align: center;
     position: absolute;

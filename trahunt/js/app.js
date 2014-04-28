@@ -341,7 +341,7 @@ var application = {};
 
                     element.appendChild(title);
                     element.appendChild(droppable);
-                    droppable.appendChild(dragHint);
+                    element.appendChild(dragHint);
 
                     this.element.appendChild(element);
                 }
