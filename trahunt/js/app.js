@@ -392,9 +392,9 @@ var application = {};
                         if (selectedAnswers[ai].hasAttribute('draggable')) {
                             var answerId = selectedAnswers[ai].getAttribute('draggable');
 
-                            var color = (this._.indexOf(qi + '' + answerId) !== -1) ? '240, 192' : '255, 92';
+                            var color = (this._.indexOf(qi + '' + answerId) !== -1) ? '21, 237, 50' : '255, 92, 0';
 
-                            selectedAnswers[ai].style.backgroundColor = 'rgba(' + color + ', 0, 0.9)';
+                            selectedAnswers[ai].style.backgroundColor = 'rgba(' + color + ', 0.9)';
                         }
                     }
                 }
