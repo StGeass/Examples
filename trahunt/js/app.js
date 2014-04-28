@@ -276,10 +276,10 @@ var application = {};
      * @param {Function} callback
      */
 
-    function getJSON(path, callback) {
+    function getJSON(filename, callback) {
         var xhr = new XMLHttpRequest();
 
-        xhr.open('GET', path, true);
+        xhr.open('GET', 'json/' + filename + '.json', true);
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState != 4) return;
@@ -294,19 +294,19 @@ var application = {};
     }
 
     /**
-     * @param {String} path to JSON file
+     * @param {String} id of question
      * @param {String} title (id for test title container)
      * @param {String} dropTo (id for drop container)
      * @param {String} dragFrom (id for drag container)
      * @param {String} button (id for checking button)
      */
 
-    this.test = function Test(path, title, dropTo, dragFrom, button) {
+    this.test = function Test(id, title, dropTo, dragFrom, button) {
         if (Test.length !== arguments.length)
             throw new Error('Invalid number of parameters');
 
         if (!(this instanceof  Test))
-            return new Test(path, title, dropTo, dragFrom, button);
+            return new Test(id, title, dropTo, dragFrom, button);
 
         var self = this;
 
@@ -393,7 +393,7 @@ var application = {};
             }
         }
 
-        getJSON(path, function (question) {
+        getJSON('question-' + id, function (question) {
             self.title.set(question.text);
             self.answers.set(question.answers);
             self.questions.set(question.questions);
@@ -406,7 +406,7 @@ var application = {};
                 self.correct.compare();
             }
             else {
-                getJSON('json/answers.json', function (correct) {
+                getJSON('answers-' + id, function (correct) {
                     self.correct.set(correct).compare();
                 });
             }
