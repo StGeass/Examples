@@ -1,10 +1,15 @@
 'use strict';
 
+// Global application object
+
 var application = {};
 
-// Event
+
+// Helper for events
+
 (function () {
     this.eventHelper = {
+
         /**
          * @param {Object} element the DOM Object
          * @param {Array, String} eventsNames list
@@ -88,19 +93,22 @@ var application = {};
         preventDefault: function (event) {
             if (event.preventDefault)
                 event.preventDefault();
-            else // Привет IE
+            else // Hello IE
                 event.returnValue = false;
         }
     };
 }).call(application);
 
-// Drag and drop
+
+// Drag and drop constructor
+
 (function (eventHelper) {
+
     /**
      * @param {Object} element the DOM Object
      */
 
-    function getCoords(element) {
+    function getCoordinates(element) {
         var box = element.getBoundingClientRect();
 
         var body = document.body;
@@ -135,143 +143,191 @@ var application = {};
         return target;
     }
 
-    this.dragAndDrop = function dragAndDrop() {
-        var dragTarget = {};
+    // D'n'D object constructor
 
-        var self = this;
+    this.dragAndDrop = function dragAndDrop() {};
 
-        this.onDown = function (event) {
-            event = eventHelper.fix(event);
+    // D'n'D object prototypes
 
-            if (event.which != 1) return;
+    /**
+     * @param {Object} event the Event Object
+     */
 
-            var elem = self.getDraggable(event);
-            if (!elem) return;
+    this.dragAndDrop.prototype.onDown = function (event) {
+        event = eventHelper.fix(event);
 
-            dragTarget.elem = elem;
+        if (event.which != 1) return;
 
-            dragTarget.downX = event.pageX;
-            dragTarget.downY = event.pageY;
-        }
+        var elem = this.getDraggable(event);
 
-        this.onMove = function (event) {
-            if (!dragTarget.elem) return;
+        if (!elem) return;
 
-            event = eventHelper.fix(event);
+        this.elem = elem;
 
-            if (!dragTarget.copy) {
-                var moveX = event.pageX - dragTarget.downX;
-                var moveY = event.pageY - dragTarget.downY;
+        this.downX = event.pageX;
+        this.downY = event.pageY;
+    }
 
-                if (Math.abs(moveX) < 3 && Math.abs(moveY) < 3) {
-                    return;
-                }
+    /**
+     * @param {Object} event the Event Object
+     */
 
-                dragTarget.copy = self.createCopy(event);
-                if (!dragTarget.copy) {
-                    dragTarget = {};
-                    return;
-                }
+    this.dragAndDrop.prototype.onMove = function (event) {
+        if (!this.elem) return;
 
-                var coords = getCoords(dragTarget.copy);
-                dragTarget.shiftX = dragTarget.downX - coords.left;
-                dragTarget.shiftY = dragTarget.downY - coords.top;
+        event = eventHelper.fix(event);
 
-                self.startDrag(event);
+        if (!this.copy) {
+            var moveX = event.pageX - this.downX;
+            var moveY = event.pageY - this.downY;
+
+            if (Math.abs(moveX) < 3 && Math.abs(moveY) < 3) {
+                return;
             }
 
-            dragTarget.copy.style.left = event.pageX - dragTarget.shiftX + 'px';
-            dragTarget.copy.style.top = event.pageY - dragTarget.shiftY + 'px';
-        }
-
-        this.onUp = function (event) {
-            if (dragTarget.copy) {
-                self.finishDrag(eventHelper.fix(event));
+            this.copy = this.createCopy();
+            if (!this.copy) {
+                this = {};
+                return;
             }
 
-            dragTarget = {};
+            var coordinates = getCoordinates(this.copy);
+            this.shiftX = this.downX - coordinates.left;
+            this.shiftY = this.downY - coordinates.top;
+
+            this.startDrag(event);
         }
 
-        this.finishDrag = function (event) {
-            var dropElem = self.getDroppable(event);
+        this.copy.style.left = event.pageX - this.shiftX + 'px';
+        this.copy.style.top = event.pageY - this.shiftY + 'px';
+    }
 
-            if (!dropElem) {
-                self.onDragCancel(dragTarget);
-            } else {
-                self.onDragEnd(dragTarget, dropElem);
-            }
+    /**
+     * @param {Object} event the Event Object
+     */
+
+    this.dragAndDrop.prototype.onUp = function (event) {
+        if (this.copy) {
+            this.finishDrag(eventHelper.fix(event));
         }
 
-        this.createCopy = function (event) {
-            var copy = dragTarget.elem;
-            var old = {
-                parent: copy.parentNode,
-                nextSibling: copy.nextSibling,
-                position: copy.position || '',
-                left: copy.left || '',
-                top: copy.top || '',
-                zIndex: copy.zIndex || ''
-            };
+        this.elem = null;
+        this.copy = null;
+    }
 
-            copy.backPosition = function () {
-                old.parent.insertBefore(copy, old.nextSibling);
-            };
+    /**
+     * @param {Object} event the Event Object
+     */
 
-            copy.backStyles = function () {
-                copy.style.position = old.position;
-                copy.style.left = old.left;
-                copy.style.top = old.top;
-                copy.style.zIndex = old.zIndex
-            };
+    this.dragAndDrop.prototype.finishDrag = function (event) {
+        var dropElem = this.getDroppable(event);
 
-            return copy;
+        if (!dropElem) {
+            this.onDragCancel();
+        } else {
+            this.onDragEnd(dropElem);
         }
+    }
 
-        this.startDrag = function (event) {
-            var copy = dragTarget.copy;
+    /**
+     * Getting copy of DOM object
+     */
 
-            copy.style.zIndex = 9999;
-            copy.style.position = 'absolute';
-
-            document.body.appendChild(copy);
-        }
-
-        this.getDraggable = function (event) {
-            var elem = event.target;
-            while (elem != document && elem.getAttribute('draggable') == null) {
-                elem = elem.parentNode;
-            }
-            return elem == document ? null : elem;
-        }
-
-        this.getDroppable = function (event) {
-
-            var elem = getElementUnderClientXY(dragTarget.copy, event.clientX, event.clientY);
-
-            while (elem != document && elem.getAttribute('droppable') == null) {
-                elem = elem.parentNode;
-            }
-
-            return elem == document ? null : elem;
-        }
-
-        this.onDragEnd = function (dragTarget, dropElem) {
-            dragTarget.copy.backStyles();
-
-            dropElem.appendChild(dragTarget.elem);
+    this.dragAndDrop.prototype.createCopy = function () {
+        var copy = this.elem;
+        var old = {
+            parent: copy.parentNode,
+            nextSibling: copy.nextSibling,
+            position: copy.position || '',
+            left: copy.left || '',
+            top: copy.top || '',
+            zIndex: copy.zIndex || ''
         };
 
-        this.onDragCancel = function (dragTarget) {
-            dragTarget.copy.backStyles();
-            dragTarget.copy.backPosition();
+        copy.backPosition = function () {
+            old.parent.insertBefore(copy, old.nextSibling);
         };
+
+        copy.backStyles = function () {
+            copy.style.position = old.position;
+            copy.style.left = old.left;
+            copy.style.top = old.top;
+            copy.style.zIndex = old.zIndex
+        };
+
+        return copy;
+    }
+
+    /**
+     * Method for onDragStart event
+     */
+
+    this.dragAndDrop.prototype.startDrag = function () {
+        var copy = this.copy;
+
+        copy.style.zIndex = 9999;
+        copy.style.position = 'absolute';
+
+        document.body.appendChild(copy);
+    }
+
+    /**
+     * Getting draggable DOM object
+     * @param {Object} event the Event Object
+     */
+
+    this.dragAndDrop.prototype.getDraggable = function (event) {
+        var elem = event.target;
+        while (elem != document && elem.getAttribute('draggable') == null) {
+            elem = elem.parentNode;
+        }
+        return elem == document ? null : elem;
+    }
+
+    /**
+     * Getting droppable DOM object
+     * @param {Object} event the Event Object
+     */
+
+    this.dragAndDrop.prototype.getDroppable = function (event) {
+
+        var elem = getElementUnderClientXY(this.copy, event.clientX, event.clientY);
+
+        while (elem != document && elem.getAttribute('droppable') == null) {
+            elem = elem.parentNode;
+        }
+
+        return elem == document ? null : elem;
+    }
+
+    /**
+     * Method for onDragEnd event
+     * @param {Object} dropElem the DOM Object
+     */
+
+    this.dragAndDrop.prototype.onDragEnd = function (dropElem) {
+        this.copy.backStyles();
+
+        dropElem.appendChild(this.elem);
+    };
+
+    /**
+     * Method for onDragCancel event
+     */
+
+    this.dragAndDrop.prototype.onDragCancel = function () {
+        this.copy.backStyles();
+        this.copy.backPosition();
     };
 }).call(application, application.eventHelper);
 
-// Test module
+
+// Constructor for tests
+
 (function (eventHelper, dragAndDrop) {
 
     /**
+     * Helper for XHR request and JSON parse
      * @param {String} path
      * @param {Function} callback
      */
@@ -391,7 +447,7 @@ var application = {};
                     }
                 }
             }
-        }
+        };
 
         getJSON('question-' + id, function (question) {
             self.title.set(question.text);
@@ -411,7 +467,7 @@ var application = {};
                 });
             }
         }, this);
-    }
+    };
 
     // Subscribe on mouse events
     eventHelper.subscribe(document, 'mousedown', function (event) {
@@ -437,5 +493,4 @@ var application = {};
     eventHelper.subscribe(document, 'touchmove', eventHelper.touchHandler, eventHelper);
     eventHelper.subscribe(document, 'touchend', eventHelper.touchHandler, eventHelper);
     eventHelper.subscribe(document, 'touchcancel', eventHelper.touchHandler, eventHelper);
-
 }).apply(application, [application.eventHelper, new application.dragAndDrop]);

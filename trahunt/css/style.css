@@ -67,7 +67,7 @@
     display: inline-block;
 }
 
-#container .draggable-answer {
+.draggable-answer {
     padding: 5px;
     margin: 5px;
     cursor: pointer;
